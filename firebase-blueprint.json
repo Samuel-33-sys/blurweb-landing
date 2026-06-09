@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "LicenseKey": {
+      "title": "License Key",
+      "description": "An activation key for the Blurra extension",
+      "type": "object",
+      "properties": {
+        "license_key": {
+          "type": "string",
+          "description": "The unique 16-character license key"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Customer email address"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["Free", "Pro", "Pro Yearly", "iPro"],
+          "description": "Selected plan name"
+        },
+        "payment_type": {
+          "type": "string",
+          "enum": ["monthly", "lifetime"],
+          "description": "Type of payment"
+        },
+        "amount": {
+          "type": "string",
+          "description": "Formatted payment amount"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp for expiration (null for lifetime)"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the key was generated"
+        },
+        "order_id": {
+          "type": "string",
+          "description": "Lemon Squeezy order ID"
+        }
+      },
+      "required": ["license_key", "email", "plan", "payment_type", "order_id"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User subscription and usage data",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "pro"],
+          "description": "Subscription plan level"
+        },
+        "payment_type": {
+          "type": "string",
+          "enum": ["monthly", "lifetime"],
+          "description": "Type of payment linked to the user"
+        },
+        "blurCount": {
+          "type": "integer",
+          "description": "Daily usage count"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["email", "plan"]
+    }
+  },
+  "firestore": {
+    "/keys/{keyId}": {
+      "schema": "LicenseKey",
+      "description": "Collection of all license keys"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Users collection with subscription state"
+    }
+  }
+}

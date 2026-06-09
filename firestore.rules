@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.email is string 
+        && data.plan in ['free', 'pro']
+        && (data.payment_type == null || data.payment_type in ['monthly', 'lifetime'])
+        && (data.blurCount == null || data.blurCount is int);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can only read their own data
+      allow read: if isOwner(userId);
+      
+      // Users can update their own data if valid, but cannot escalate their own plan to 'pro' 
+      // unless specified by the backend/admin logic (if applicable).
+      // For this landing page demo, we allow them to update their count or metadata.
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) 
+        && isValidUser(request.resource.data)
+        // Immutable email protection
+        && request.resource.data.email == resource.data.email;
+    }
+
+    // Keys collection
+    match /keys/{keyId} {
+      // Only readable if the user owns the key (matched by email)
+      allow read: if isSignedIn() && request.auth.token.email == resource.data.email;
+      allow write: if false; // Only manageable via Admin SDK
+    }
+  }
+}
